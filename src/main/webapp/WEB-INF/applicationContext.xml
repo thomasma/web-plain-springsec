@@ -11,45 +11,31 @@
 	    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd   
 	    http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd   
 	    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
-	    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-	    http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd 
-	    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+	    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
 	<context:component-scan base-package="com.aver.restful" />
 	<context:annotation-config />
 
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-
-	<jaxrs:server id="restfulservices" address="/services">
-		<jaxrs:serviceBeans>
-			<bean class="com.aver.restful.TimeOfTheDayServiceImpl" />
-		</jaxrs:serviceBeans>
-		<jaxrs:extensionMappings>
-			<entry key="json" value="application/json" />
-			<entry key="xml" value="application/xml" />
-			<entry key="plain" value="text/plan" />
-		</jaxrs:extensionMappings>
-		<jaxrs:languageMappings />
-	</jaxrs:server>
-
 	<sec:authentication-manager>
 		<sec:authentication-provider>
 			<sec:user-service id="userService">
-				<sec:user name="admin" password="password" authorities="admin" />
-				<sec:user name="johndoe" password="password" authorities="customer, admin" />
+				<sec:user name="admin" password="password" authorities="ROLE_USER, ROLE_ADMIN" />
+				<sec:user name="johndoe" password="password" authorities="ROLE_USER" />
 			</sec:user-service>
 		</sec:authentication-provider>
 	</sec:authentication-manager>
+	
+	<sec:http pattern="/includes.jsp*" security="none" />
+	<sec:http pattern="/css/**" security="none" />
+	<sec:http pattern="/images/**" security="none" />
+	<sec:http pattern="/login.jsp*" security="none" />
 
-	<sec:http create-session="stateless" use-expressions="true">
-		<sec:intercept-url pattern="/services/timeoftheday/asplaintext/**"
-			access="permitAll" />
-		<sec:intercept-url pattern="/services/timeoftheday/asxml/**"
-			access="hasRole('admin')" />
-		<sec:intercept-url pattern="/services/timeoftheday/asjson/**"
-			access="hasAnyRole('admin','customer')" />
-		<sec:http-basic />
+	<sec:http auto-config="true" access-denied-page="/accessdenied.jsp" use-expressions="true">
+		<sec:form-login login-page="/login.jsp"
+			authentication-failure-url="/login.jsp" default-target-url="/index.jsp" />
+		<sec:logout logout-success-url="/login.jsp" />
+		<sec:intercept-url pattern="/*" access="hasAnyRole('ROLE_ADMIN, ROLE_USER')" />
+		<sec:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
 	</sec:http>
 
 </beans>

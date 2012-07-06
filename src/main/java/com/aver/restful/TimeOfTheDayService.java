@@ -1,6 +1,5 @@
 package com.aver.restful;
 
-
 public interface TimeOfTheDayService {
 
 	public abstract String getTimeOfTheDay(String name);
